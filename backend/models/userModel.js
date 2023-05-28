@@ -28,11 +28,16 @@ const userSchema = mongoose.Schema({
     },
     empNum: {
         type: String,
+        default: "Indicate"
     },
     bio: {
         type: String,
         default: "Bio",
         maxLength: [250, "Bio must not be more than 250 characters"]
+    },
+    phone: {
+        type: String,
+        default: "+63"
     }
 }, {
     timestamps: true,
