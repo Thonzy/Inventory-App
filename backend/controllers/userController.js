@@ -1,5 +1,11 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler")
+const jwt = require("jsonwebtoken")
+
+const generateToken = (id) => {
+    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: "1d"})
+}
+
 
 
 
@@ -25,17 +31,31 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error("Email already in use.")
     }
 
+
     // Creating new User
     const user = await User.create({
         name,
         email,
-        password
+        password,
+    })
+
+
+    //Generate token
+    const token = generateToken(user._id)
+
+    // send http-only cookie
+    res.cookie("token", token, {
+        path: "/",
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400), // 1 day
+        sameSite: "none",
+        secure: true,
     })
 
     if(user){
         const {_id, name, email, photo, empNum, bio} = user
         res.status(201).json({
-            _id, name, email, photo, empNum, bio
+            _id, name, email, photo, empNum, bio, token
         })
     } else {
         res.status(400)
@@ -43,6 +63,12 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
+// Log in User
+const loginUser = asyncHandler( async (req, res) => {
+    res.send("Login User");
+});
+
 module.exports = {
     registerUser,
+    loginUser,
 };
