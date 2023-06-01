@@ -54,9 +54,9 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if(user){
-        const {_id, name, email, photo, empNum, bio} = user
+        const {_id, name, email, photo, empNum, bio, phone} = user
         res.status(201).json({
-            _id, name, email, photo, empNum, bio, token
+            _id, name, email, photo, empNum, bio, phone, token
         })
     } else {
         res.status(400)
@@ -99,9 +99,9 @@ const loginUser = asyncHandler( async (req, res) => {
     })
 
     if(user && passwordIsCorrect){
-        const {_id, name, email, photo, empNum, bio} = user
+        const {_id, name, email, photo, empNum, bio, phone} = user
         res.status(200).json({
-            _id, name, email, photo, empNum, bio, token
+            _id, name, email, photo, empNum, bio, phone, token
         })
     } else {
         res.status(400);
@@ -124,12 +124,74 @@ const logoutUser = asyncHandler (async (res, req) => {
 
 // Get user data
 const getUser = asyncHandler (async (req, res) => {
-    
+    const user = await User.findById(req.user._id)
+
+    if(user){
+        const {_id, name, email, photo, empNum, bio, phone} = user
+        res.status(200).json({
+            _id, name, email, photo, empNum, bio, phone,
+        })
+    } else {
+        res.status(400)
+        throw new Error("User not Found")
+    }
+});
+
+// Get login status
+const loginStatus = asyncHandler( async (req, res) => {
+
+    const token = req.cookies.token;
+    if (!token) {
+        return res.json(false);
+    }
+
+    // Verify Token
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+    if(verified){
+        return res.json(true)
+    } else {
+        return res.json(false)
+    }
+
+});
+
+// Update user info
+const updateUser = asyncHandler (async (req, res) => {
+
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+        const {_id, name, email, photo, phone, empNum, bio} = user;
+        user.email = email;
+        user.empNum = empNum;
+        user.name = req.body.name || name;
+        user.photo = req.body.photo || photo;
+        user.phone = req.body.phone || phone;
+        user.bio = req.body.bio || bio;
+
+        const updatedUser = await user.save()
+        res.status(200).json({
+            _id: updateUser._id, 
+            name: updateUser.name, 
+            email: updateUser.email, 
+            photo: updateUser.photo, 
+            phone: updateUser.phone, 
+            empNum: updateUser.empNum, 
+            bio: updateUser.bio,
+        })
+    } else {
+        res.status(404)
+        throw new Error("User not Found")
+    }
+
 });
 
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
-    getUser
+    getUser,
+    loginStatus,
+    updateUser,
 };
