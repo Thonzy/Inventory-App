@@ -80,7 +80,7 @@ const getProduct = asyncHandler(async (req, res) => {
 
 // Delete a Product
 
-const deletProduct = asyncHandler(async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
     // If product does not exist
     if(!product){
@@ -97,3 +97,78 @@ const deletProduct = asyncHandler(async (req, res) => {
     await product.remove();
     res.status(200).json({message: "Product has been Removed."});
 });
+
+// Update Product
+
+const updateProduct = asyncHandler(async (req, res) => {
+    const {name, category, quantity, price, description} = req.body;
+    const {id} = req.params;
+
+    const product = await Product.findById(id);
+
+    // if product doesn't exist
+
+    if(!product) {
+        res.status(404);
+        throw new Error("Product not found.")
+    }
+
+    // Match product to user
+    if(product.user.toString() !== req.user.id) {
+        res.status(401);
+        throw new Error("User not Authorized");
+    }
+
+    // Handle image upload
+
+    let fileData = {};
+    if (req.file) {
+        // Save image to cloudinary
+        let uploadedFile;
+        try {
+            uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+                folder: "Inventory-App",
+                resource_type: "image",
+            })
+        } catch (error) {
+            res.status(500);
+            throw new Error("Image could not be uploaded.")
+        }
+
+        fileData = {
+            fileName: req.file.originalname,
+            filePath: uploadedFile.secure_url,
+            fileType: req.file.mimetype,
+            fileSize: fileSizeFormatter(req.file.size, 2),
+        };
+    }
+
+    // Updating and saving
+
+
+    const updatedProduct = await Product.findByIdandUpdate(
+        {_id: id},
+        {
+            name,
+            category,
+            quantity,
+            price,
+            description,
+            image: Object.keys(fileData).length === 0 ? product?.image: fileData,
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    );
+
+    res.status(200).json(updatedProduct);
+});
+
+module.exports = {
+    createProduct,
+    getProduct,
+    getProducts,
+    deleteProduct,
+    updateProduct,
+};
