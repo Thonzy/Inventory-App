@@ -6,6 +6,8 @@ const cors = require("cors");
 const userRoute = require("./routes/userRoute")
 const errorHandler = require("./middleWare/errorMiddleware")
 const cookieParser = require("cookie-parser")
+const path = require("path");
+const exp = require("constants");
 
 const app = express()
 
@@ -14,9 +16,19 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended: false}))
 app.use(bodyParser.json())
+app.use(
+    cors({
+        origin: ["http://localhost:3000", "https://Inventory-App.vercel.app"],
+        credentials: true,
+    })
+);
+
+app.user("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //Routes Middleware
 app.use("/api/users", userRoute)
+app.use("/api/products", productRoute)
+app.use("/api/contactUs", contactRoute)
 
 //Routes
 app.get("/", (req, res) =>{
