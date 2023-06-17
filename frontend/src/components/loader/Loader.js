@@ -1,6 +1,6 @@
 import React from "react";
 import loaderImg from "../../assets/loader.gif";
-import { ReactDOM } from "react-dom";
+import ReactDOM from "react-dom";
 import "./Loader.scss";
 
 const Loader = () => {

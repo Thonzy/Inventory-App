@@ -7,7 +7,7 @@ import Search from "../../search/Search";
 import { useDispatch, useSelector } from "react-redux";
 import {
     FILTER_PRODUCTS,
-    selectFilteredPoducts
+    selectFilteredProducts
 } from "../../../redux/features/product/filterSlice";
 import ReactPaginate from "react-paginate";
 import { confirmAlert } from "react-confirm-alert";

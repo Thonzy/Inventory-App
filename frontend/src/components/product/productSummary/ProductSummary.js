@@ -12,7 +12,7 @@ import {
     selectCategory,
     selectOutOfStock,
     selectTotalStoreValue,
-} from "../../../redux/features/products/productSlice";
+} from "../../../redux/features/product/productSlice";
 
 // Icons
 const earningIcon = <AiFillDollarCircle size={40} color="#fff" />;

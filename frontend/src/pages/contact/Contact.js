@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Card from "../../components/card/Card";
 import "./Contact.scss";
 import { FaPhoneAlt, FaEnvelope, FaTwitter } from "react-icons/fa";
-import { GoLoacation} from "react-icons/go";
+import { GoLocation } from "react-icons/go";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { BACKEND_URL } from "../../services/authService";
@@ -70,7 +70,7 @@ const Contact = () => {
                                 <p>Mail</p>
                             </span>
                             <span>
-                                <GoLoacation />
+                                <GoLocation />
                                 <p>Location</p>
                             </span>
                             <span>

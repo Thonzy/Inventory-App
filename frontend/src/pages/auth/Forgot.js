@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./auth.module.scss";
-import { AiOutLineMail } from "react-icons/ai";
+import { AiOutlineMail } from "react-icons/ai";
 import Card from "../../components/card/Card";
 import { Link } from "react-router-dom";
 import { forgotPassword, validateEmail } from "../../services/authService";
@@ -32,7 +32,7 @@ const Forgot = () => {
             <Card>
                 <div className={styles.form}>
                     <div className="--flex-center">
-                        <AiOutLineMail size={35} color="#999" />
+                        <AiOutlineMail size={35} color="#999" />
                     </div>
                     <h2>Forgot Password</h2>
 
