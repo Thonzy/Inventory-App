@@ -13,4 +13,4 @@ router.patch("/changepassword", protect, changePassword)
 router.post("/forgotpassword", protect, forgotPassword)
 router.put("/resetpassword/:resetToken", resetPassword)
 
-module.exports = router
+module.exports = router;
