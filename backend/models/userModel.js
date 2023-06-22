@@ -42,7 +42,8 @@ const userSchema = mongoose.Schema({
     }
 }, {
     timestamps: true,
-})
+    }
+);
 
 
 // Encrypt password
@@ -60,4 +61,4 @@ userSchema.pre("save", async function(next){
 })
 
 const User = mongoose.model("User", userSchema)
-module.exports = User
+module.exports = User;
