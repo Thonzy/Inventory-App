@@ -56,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if(user){
-        const {_id, name, email, photo, empNum, bio, phone} = user
+        const { _id, name, email, photo, empNum, bio, phone } = user
         res.status(201).json({
             _id, name, email, photo, empNum, bio, phone, token
         })
@@ -164,9 +164,9 @@ const updateUser = asyncHandler (async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-        const {_id, name, email, photo, phone, empNum, bio} = user;
+        const { name, email, photo, phone, empNum, bio } = user;
         user.email = email;
-        user.empNum = empNum;
+        user.empNum = req.body.empNum || empNum;
         user.name = req.body.name || name;
         user.photo = req.body.photo || photo;
         user.phone = req.body.phone || phone;
@@ -249,7 +249,7 @@ const forgotPassword = asyncHandler ( async (req, res) => {
         token: hashedToken,
         createdAt: Date.now(),
         expiresAt: Date.now() + 30 * (60 * 1000) // Thirty minutes
-    }).save()
+    }).save();
 
     // Construct a reset url
     const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`
