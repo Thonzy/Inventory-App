@@ -25,13 +25,17 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error("Password must be 8 characters")
     }
 
+    // Additional logic for user registration
+
+    res.status(200).json({message: "User registered succesfully"});
+
 
     // Check user email if it exist
     const userExists = await User.findOne({email})
 
     if(userExists) {
         res.status(400)
-        throw new Error("Email already in use.")
+        throw new Error("Email already in use.");
     }
 
 
@@ -40,7 +44,10 @@ const registerUser = asyncHandler(async (req, res) => {
         name,
         email,
         password,
-    })
+    });
+
+    // Handle successful user registration
+    res.status(201).json({message: "User registered successfully", user});
 
 
     //Generate token
@@ -56,13 +63,13 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if(user){
-        const { _id, name, email, photo, empNum, bio, phone } = user
+        const { _id, name, email, photo, empNum, bio, phone } = user;
         res.status(201).json({
             _id, name, email, photo, empNum, bio, phone, token
-        })
+        });
     } else {
         res.status(400)
-        throw new Error("Invalid user data")
+        throw new Error("Invalid user data");
     }
 });
 
@@ -126,6 +133,7 @@ const logoutUser = asyncHandler (async (res, req) => {
 
 // Get user data
 const getUser = asyncHandler (async (req, res) => {
+    // Find the user based on the user's _id stored in req.user
     const user = await User.findById(req.user._id)
 
     if(user){
@@ -134,7 +142,7 @@ const getUser = asyncHandler (async (req, res) => {
             _id, name, email, photo, empNum, bio, phone,
         })
     } else {
-        res.status(400)
+        res.status(404)
         throw new Error("User not Found")
     }
 });
@@ -160,88 +168,91 @@ const loginStatus = asyncHandler( async (req, res) => {
 
 // Update user info
 const updateUser = asyncHandler (async (req, res) => {
-
     const user = await User.findById(req.user._id);
 
     if (user) {
         const { name, email, photo, phone, empNum, bio } = user;
-        user.email = email;
+
+        // Update user properties with values from request body
+        user.email = req.body.email || email;
         user.empNum = req.body.empNum || empNum;
         user.name = req.body.name || name;
         user.photo = req.body.photo || photo;
         user.phone = req.body.phone || phone;
         user.bio = req.body.bio || bio;
 
+        // Save the updated user data
         const updatedUser = await user.save()
         res.status(200).json({
-            _id: updateUser._id, 
-            name: updateUser.name, 
-            email: updateUser.email, 
-            photo: updateUser.photo, 
-            phone: updateUser.phone, 
-            empNum: updateUser.empNum, 
-            bio: updateUser.bio,
-        })
+            _id: updatedUser._id, 
+            name: updatedUser.name, 
+            email: updatedUser.email, 
+            photo: updatedUser.photo, 
+            phone: updatedUser.phone, 
+            empNum: updatedUser.empNum, 
+            bio: updatedUser.bio,
+        });
     } else {
         res.status(404)
-        throw new Error("User not Found")
+        throw new Error("User not Found");
     }
 
 });
 
 // Change password
 const changePassword = asyncHandler ( async (req, res) => {
+    const user = await User.findById(req.user._id);
 
-    const user = await User.findById(req.user._id)
-
-    const {oldPassword, password} = req.body
+    const {oldPassword, password} = req.body;
 
     if(!user) {
         res.status(400)
-        throw new Error("User not found, please sign up")
+        throw new Error("User not found, please sign up");
     }
+
     //validate password
     if(!oldPassword || !password) {
         res.status(400)
-        throw new Error("Please add old and new password")
+        throw new Error("Please add old and new password");
     }
 
     // check if old password match within the database
-    const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password)
+    const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password);
 
     // Saving new password
     if(user && passwordIsCorrect) {
-        user.password = password
-        await user.save()
-        res.status(200).send("Password Changed Successfully")
+        user.password = password;
+        await user.save();
+        res.status(200).send("Password Changed Successfully");
     } else {
         res.status(400)
-        throw new Error("Old Password is incorrect")
+        throw new Error("Old Password is incorrect");
     }
-})
+});
 
+// Forgot Password
 const forgotPassword = asyncHandler ( async (req, res) => {
 
-    const {email} = req.body
-    const user = await User.findOne({email})
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
     if(!user) {
         res.status(404)
-        throw new Error("User does not exist")
+        throw new Error("User does not exist");
     }
 
     // Delete token if it exist in database
-    let token = await Token.findOne({userId: user._id})
+    const token = await Token.findOne({ userId: user._id });
     
-    if(token) {
-        await token.deleteOne()
+    if (token) {
+        await token.deleteOne();
     }
 
     // Create reset token
-    let resetToken = crypto.randomBytes(32).toString("hex") + user._id
+    let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
     
     //Hash token before saving to database
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
     
     // Saving token to database
     await new Token({
@@ -264,24 +275,24 @@ const forgotPassword = asyncHandler ( async (req, res) => {
 
         <p>Regards...</p>
     `;
-    const subject = "Password Reset Request"
-    const send_to = user.email
-    const sent_from = process.env.EMAIL_USER
+    const subject = "Password Reset Request";
+    const send_to = user.email;
+    const sent_from = process.env.EMAIL_USER;
 
     try {
-        await sendEmail(subject, message, send_to, sent_from)
-        res.status(200).json({success: true, message: "Reset email sent"})
+        await sendEmail(subject, message, send_to, sent_from);
+        res.status(200).json({success: true, message: "Reset email sent"});
     } catch (err) {
-        res.status(500)
-        throw new Error("Something went wrong, email not sent. Please try again")
+        res.status(500);
+        throw new Error("Something went wrong, email not sent. Please try again");
     }
 });
 
 // Reset Password
 const resetPassword = asyncHandler( async (req, res) => {
 
-    const {password} = req.body
-    const {resetToken} = req.params
+    const { password } = req.body;
+    const { resetToken } = req.params;
 
     // Hash token, then compare
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
@@ -289,24 +300,25 @@ const resetPassword = asyncHandler( async (req, res) => {
     // Find token in database
     const userToken = await Token.findOne({
         token: hashedToken,
-        expiresAt: {$gt: Date.now()}
-    })
+        expiresAt: { $gt: Date.now() },
+    });
 
     if (!userToken) {
-        res.status(404)
-        throw new Error("Invalid or Expired Token")
+        res.status(404);
+        throw new Error("Invalid or Expired Token");
     }
 
     //Find user
-    const user = await User.findOne({_id: userToken.userId})
-    user.password = password
-    await user.save()
+    const user = await User.findOne({ _id: userToken.userId });
+    user.password = password;
+    await user.save();
+
     res.status(200).json({
-        message: "Password Reset Successful, Please Login"
-    })
+        message: "Password Reset Successful, Please Login",
+    });
 
 
-})
+});
 
 module.exports = {
     registerUser,

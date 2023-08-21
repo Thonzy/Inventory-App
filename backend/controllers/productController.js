@@ -9,15 +9,17 @@ const createProduct = asyncHandler(async (req, res) => {
 
     // Product Validation
     if (!name || !category || !quantity || !price || !description) {
-        res.status(400)
+        res.status(400);
         throw new Error("Please fill in all fields");
     }
 
     // Handling the product image upload
     let fileData = {};
+
     if (req.file) {
         // Save image to cloudinary
         let uploadedFile;
+
         try {
             uploadedFile = await cloudinary.uploader.upload(req.file.path, {
                 folder: "Inventory-App",
@@ -25,7 +27,7 @@ const createProduct = asyncHandler(async (req, res) => {
             });
         } catch (error) {
             res.status(500);
-            throw new Error("Image could not be uploaded.")
+            throw new Error("Image could not be uploaded.");
         }
 
         fileData = {
@@ -39,14 +41,14 @@ const createProduct = asyncHandler(async (req, res) => {
     // Create Product 
     
     const product = await Product.create({
-        user: req.user.id,
+        user: req.user.id,// Assuming req.user.id holds the user's ID
         name,
         sku,
         category,
         quantity,
         price,
         description,
-        image: fileData,
+        image: fileData,// Assuming fileData holds image information
     });
 
     res.status(201).json(product);
@@ -55,7 +57,10 @@ const createProduct = asyncHandler(async (req, res) => {
 // Get all products
 
 const getProducts = asyncHandler(async (req, res) => {
+    // Find all products associated with the user and sort them by createdAt in descending order
     const products = await Product.find({user: req.user.id }).sort("-createdAt");
+    
+    // Respond with products
     res.status(200).json(products);
 });
 
@@ -63,14 +68,15 @@ const getProducts = asyncHandler(async (req, res) => {
 
 const getProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
+
     // If product does not exist
-    if(!product) {
-        res.status(404)
+    if (!product) {
+        res.status(404);
         throw new Error("Product not found");
     }
 
     // Match product to its user
-    if(product.user.toString() !== req.user.id) {
+    if (product.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error("User not authorized");
     }
@@ -82,20 +88,24 @@ const getProduct = asyncHandler(async (req, res) => {
 
 const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
+
     // If product does not exist
-    if(!product){
+    if (!product){
         res.status(404);
         throw new Error("Product not found");
     }
 
     // Match product to its user
-    if(product.user.toString() !== req.user.id){
+    if (product.user.toString() !== req.user.id) {
         res.status(401);
         throw new Error("User not Authorized");
     }
 
+    // Remove the product
     await product.remove();
-    res.status(200).json({message: "Product has been Removed."});
+
+    // Respond with a success message
+    res.status(200).json({ message: "Product has been Removed." });
 });
 
 // Update Product
@@ -107,7 +117,6 @@ const updateProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(id);
 
     // if product doesn't exist
-
     if(!product) {
         res.status(404);
         throw new Error("Product not found.")
@@ -146,8 +155,8 @@ const updateProduct = asyncHandler(async (req, res) => {
     // Updating and saving
 
 
-    const updatedProduct = await Product.findByIdandUpdate(
-        {_id: id},
+    const updatedProduct = await Product.findByIdAndUpdate(
+        id,
         {
             name,
             category,
